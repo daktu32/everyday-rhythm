@@ -17,6 +17,14 @@ from utils.config import Config  # noqa: E402
 class AudioManager:
     """Manages audio playback, timing synchronization, and audio analysis"""
     
+    # Supported audio formats
+    SUPPORTED_FORMATS = {
+        '.wav': 'WAV Audio',
+        '.mp3': 'MP3 Audio', 
+        '.ogg': 'OGG Vorbis',
+        '.flac': 'FLAC Audio'
+    }
+    
     def __init__(self, buffer_size: Optional[int] = None):
         """Initialize the audio manager"""
         self.buffer_size = buffer_size or Config.AUDIO_BUFFER_SIZE
@@ -60,6 +68,12 @@ class AudioManager:
                 print(f"Audio file not found: {file_path}")
             return False
         
+        # Check if format is supported
+        if not self.is_supported_format(file_path):
+            if Config.is_debug():
+                print(f"Unsupported audio format: {self.get_format_info(file_path)}")
+            return False
+        
         try:
             # Stop current music if playing
             self.stop_music()
@@ -73,7 +87,7 @@ class AudioManager:
                 self.current_music.set_volume(self.volume)
             
             if Config.is_debug():
-                print(f"Loaded audio file: {file_path}")
+                print(f"Loaded audio file: {file_path} ({self.get_format_info(file_path)})")
             
             return True
             
@@ -231,5 +245,16 @@ class AudioManager:
             "current_time_ms": self.get_current_time(),
             "is_playing": self.is_playing(),
             "is_paused": self.is_paused,
-            "volume": self.volume
+            "volume": self.volume,
+            "format": self.get_format_info(self.current_file_path)
         }
+
+    def is_supported_format(self, file_path: str) -> bool:
+        """Check if the audio file format is supported"""
+        _, ext = os.path.splitext(file_path.lower())
+        return ext in self.SUPPORTED_FORMATS
+
+    def get_format_info(self, file_path: str) -> str:
+        """Get format information for the file"""
+        _, ext = os.path.splitext(file_path.lower())
+        return self.SUPPORTED_FORMATS.get(ext, f"Unknown format ({ext})")

@@ -7,6 +7,7 @@ for automatic stage generation.
 """
 
 import sys
+import os
 import argparse
 from src.core.game_manager import GameManager
 from src.utils.config import Config
@@ -67,19 +68,35 @@ def main():
         
         # Load audio file if provided
         if args.audio:
+            import os  # Ensure os is available in this scope
             if os.path.exists(args.audio):
                 print(f"Loading audio file: {args.audio}")
                 if game_manager.load_audio(args.audio):
                     game_manager.set_volume(args.volume)
-                    game_manager.play_audio()
-                    print("Audio playback started. Press SPACE to pause/resume, ESC to quit.")
+                    print("Audio loaded, starting rhythm game...")
+                    # Start rhythm game mode automatically
+                    if game_manager.start_rhythm_game(args.audio):
+                        print("Rhythm game mode started!")
+                        print("Controls:")
+                        print("  SPACE: Hit notes")
+                        print("  ESC: Exit rhythm game")
+                    else:
+                        print("Failed to start rhythm game mode")
+                        game_manager.play_audio()
+                        print("Audio playback started. Press SPACE to pause/resume, ESC to quit.")
                 else:
                     print(f"Failed to load audio file: {args.audio}")
             else:
                 print(f"Audio file not found: {args.audio}")
+        else:
+            print("No audio file provided. Starting in debug mode.")
+            print("Supported audio formats: WAV, MP3, OGG, FLAC")
+            print("Load an audio file with --audio <file> to play the rhythm game.")
         
+        print("About to start game loop...")
         # Start the game
         game_manager.run()
+        print("Game loop ended")
         
         if Config.is_debug():
             print("Game ended normally")
@@ -91,9 +108,8 @@ def main():
         return 0
     except Exception as e:
         print(f"Error starting game: {e}")
-        if Config.is_debug():
-            import traceback
-            traceback.print_exc()
+        import traceback
+        traceback.print_exc()
         return 1
 
 
