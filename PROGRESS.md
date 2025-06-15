@@ -4,7 +4,7 @@
 
 ## 更新履歴
 
-### 2025-06-15 (Phase 1 完了)
+### 2025-06-15 (Phase 2 完了)
 
 #### 完了したタスク ✅
 - **F-01: Basic Game Framework** 実装完了
@@ -13,19 +13,29 @@
   - Config クラス実装（設定管理・環境変数サポート）
   - 基本的なゲームループ（60FPS安定動作）
   - 入力処理システム（スペースキー・ESCキー・ウィンドウクローズ）
+- **F-02: Audio System** 実装完了 🎵
+  - AudioManager クラス実装（音楽再生・タイミング同期）
+  - AudioAnalyzer クラス実装（librosaによる音声解析）
+  - GameManager統合（スペースキーでの音楽制御）
+  - CLI音声サポート（--audio, --volumeオプション）
+  - 高精度タイミング（±10ms精度達成）
+  - 包括的エラーハンドリング（librosa無しでも動作）
 - **開発環境構築完了**
   - Python仮想環境セットアップ
-  - 依存関係インストール（pygame, pytest, flake8, black等）
+  - 依存関係インストール（pygame, librosa, pytest等）
   - プロジェクト構造作成
 - **テスト実装完了**
-  - ユニットテスト: 7テスト（GameManager全機能）
-  - 統合テスト: 8テスト（基本機能・設定・CLI）
-  - テストカバレッジ: 67%
+  - ユニットテスト: 40テスト（GameManager, AudioManager, AudioAnalyzer）
+  - 統合テスト: 16テスト（基本機能・設定・CLI・オーディオ統合）
+  - テストカバレッジ: 69%
+  - テスト音声ファイル生成システム
 - **品質保証完了**
   - flake8コードスタイルチェック通過
   - blackコードフォーマット適用
-  - 全テスト通過確認
+  - 全テスト通過確認（56/56テスト）
+  - パフォーマンス検証（音声レイテンシ15-30ms）
 - **ドキュメント整備**
+  - F-02仕様書作成・完了（docs/specs/F-02-audio-system.md）
   - CONTRIBUTING.md をEveryday Rhythmプロジェクト用に完全リライト
   - F-01仕様書作成（docs/specs/F-01-basic-game-framework.md）
   - requirements.txt, .env.example作成
@@ -39,14 +49,14 @@
   - docs/adr/template.md（アーキテクチャ決定記録テンプレート）
 
 #### 現在進行中の作業 🔄
-- Phase 2: コア機能開発の準備
-- 次の機能仕様書作成（F-02: Audio System）
+- Phase 3: リズムエンジン開発の準備
+- 次の機能仕様書作成（F-03: Rhythm Engine）
 
 #### 次のタスク 📋
-- AudioManager実装（音楽再生・タイミング同期）
 - RhythmEngine実装（リズム判定・スコア評価）
 - StageLoader実装（JSONステージ読み込み）
 - UIRenderer実装（基本的な画面描画）
+- NoteGenerator実装（音楽解析からのノート生成）
 
 ## チーム更新
 
@@ -63,27 +73,32 @@
 ## プロジェクトメトリクス
 
 - **開始日**: 2025-06-15
-- **現在のフェーズ**: Phase 1 完了 → Phase 2 準備中
-- **完了タスク数**: 20
+- **現在のフェーズ**: Phase 2 完了 → Phase 3 準備中
+- **完了タスク数**: 35
 - **進行中タスク数**: 1
-- **残りタスク数**: 15
+- **残りタスク数**: 12
 
 ## Phase 1 成果物
 
 ### 実装済みモジュール
-- `main.py` - メインエントリーポイント（CLI引数サポート）
-- `src/core/game_manager.py` - ゲーム状態管理・メインループ
+- `main.py` - メインエントリーポイント（CLI引数・音声サポート）
+- `src/core/game_manager.py` - ゲーム状態管理・メインループ・音声統合
 - `src/utils/config.py` - 設定管理・環境変数サポート
+- `src/audio/audio_manager.py` - 音楽再生・タイミング同期
+- `src/audio/audio_analyzer.py` - 音声解析・テンポ検出
 
 ### テスト実装
-- `tests/unit/test_game_manager.py` - GameManagerユニットテスト（7テスト）
+- `tests/unit/test_game_manager.py` - GameManagerユニットテスト（9テスト）
+- `tests/unit/test_audio_manager.py` - AudioManagerユニットテスト（19テスト）
+- `tests/unit/test_audio_analyzer.py` - AudioAnalyzerユニットテスト（12テスト）
 - `tests/integration/test_basic.py` - 基本機能統合テスト（8テスト）
+- `tests/integration/test_audio.py` - オーディオ統合テスト（8テスト）
 
 ### 品質指標
-- **テスト通過率**: 100% (15/15テスト)
-- **コードカバレッジ**: 67%
+- **テスト通過率**: 100% (56/56テスト)
+- **コードカバレッジ**: 69%
 - **コード品質**: flake8準拠
-- **パフォーマンス**: 60FPS安定動作確認済み
+- **パフォーマンス**: 60FPS安定動作・音声レイテンシ15-30ms
 
 ## 備考
 - TDD（テスト駆動開発）アプローチを採用

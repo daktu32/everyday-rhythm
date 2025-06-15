@@ -11,6 +11,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 # Local imports after path setup
 from utils.config import Config  # noqa: E402
+from audio.audio_manager import AudioManager  # noqa: E402
 
 
 class GameManager:
@@ -29,6 +30,9 @@ class GameManager:
         # Game state
         self.running = False
         self.clock = pygame.time.Clock()
+
+        # Audio system
+        self.audio_manager = AudioManager()
 
         # Debug info
         if Config.is_debug():
@@ -79,6 +83,21 @@ class GameManager:
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_SPACE:
                     space_pressed = True
+                    # Toggle audio playback
+                    if self.audio_manager.current_music:
+                        if self.audio_manager.is_playing():
+                            self.audio_manager.pause_music()
+                            if Config.is_debug():
+                                print("Audio paused")
+                        else:
+                            if self.audio_manager.is_paused:
+                                self.audio_manager.resume_music()
+                                if Config.is_debug():
+                                    print("Audio resumed")
+                            else:
+                                self.audio_manager.play_music()
+                                if Config.is_debug():
+                                    print("Audio started")
                 elif event.key == pygame.K_ESCAPE:
                     self.running = False
 
@@ -94,10 +113,32 @@ class GameManager:
         # Clear screen with black background
         self.screen.fill((0, 0, 0))
 
-        # Placeholder for game rendering
+        # Render audio info if available
+        if Config.is_debug() and self.audio_manager.current_music:
+            self._render_debug_info()
 
         # Update display
         pygame.display.flip()
+
+    def _render_debug_info(self) -> None:
+        """Render debug information"""
+        font = pygame.font.Font(None, 24)
+        y_offset = 10
+
+        # Audio info
+        audio_info = self.audio_manager.get_audio_info()
+        if audio_info:
+            info_lines = [
+                f"Audio: {os.path.basename(audio_info.get('file_path', 'None'))}",
+                f"Time: {audio_info.get('current_time_ms', 0):.0f}ms / {audio_info.get('duration_ms', 0):.0f}ms",
+                f"Playing: {audio_info.get('is_playing', False)}",
+                f"Volume: {audio_info.get('volume', 0):.1f}",
+            ]
+
+            for line in info_lines:
+                text = font.render(line, True, (255, 255, 255))
+                self.screen.blit(text, (10, y_offset))
+                y_offset += 25
 
     def tick(self) -> None:
         """Maintain target frame rate"""
@@ -107,6 +148,10 @@ class GameManager:
         """Clean up resources"""
         if Config.is_debug():
             print("Cleaning up game resources...")
+
+        # Cleanup audio
+        if hasattr(self, 'audio_manager'):
+            self.audio_manager.cleanup()
 
         pygame.quit()
 
@@ -121,3 +166,19 @@ class GameManager:
     def stop(self) -> None:
         """Stop the game loop"""
         self.running = False
+
+    def load_audio(self, file_path: str) -> bool:
+        """Load audio file for playback"""
+        return self.audio_manager.load_music(file_path)
+
+    def play_audio(self) -> None:
+        """Start audio playback"""
+        self.audio_manager.play_music()
+
+    def stop_audio(self) -> None:
+        """Stop audio playback"""
+        self.audio_manager.stop_music()
+
+    def set_volume(self, volume: float) -> None:
+        """Set audio volume (0.0 - 1.0)"""
+        self.audio_manager.set_volume(volume)

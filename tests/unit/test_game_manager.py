@@ -32,8 +32,9 @@ class TestGameManager:
     @patch("pygame.display.set_mode")
     @patch("pygame.display.set_caption")
     @patch("pygame.time.Clock")
+    @patch("core.game_manager.AudioManager")
     def test_game_manager_initialization(
-        self, mock_clock, mock_caption, mock_display, mock_init
+        self, mock_audio_manager, mock_clock, mock_caption, mock_display, mock_init
     ):
         """Test GameManager initializes correctly"""
         # Arrange
@@ -41,6 +42,8 @@ class TestGameManager:
         mock_display.return_value = mock_screen
         mock_clock_instance = Mock()
         mock_clock.return_value = mock_clock_instance
+        mock_audio_instance = Mock()
+        mock_audio_manager.return_value = mock_audio_instance
 
         # Act
         manager = GameManager()
@@ -51,8 +54,11 @@ class TestGameManager:
         )  # Should start as False, set to True when run() is called
         assert manager.screen == mock_screen
         assert manager.clock == mock_clock_instance
+        assert manager.audio_manager == mock_audio_instance
         mock_init.assert_called_once()
         mock_display.assert_called_once()
+        mock_caption.assert_called_once_with("Everyday Rhythm")
+        mock_audio_manager.assert_called_once()
         mock_caption.assert_called_once_with("Everyday Rhythm")
 
     @patch("pygame.init")
@@ -188,3 +194,58 @@ class TestGameManager:
         # Assert
         # Should call clock.tick with 60 FPS
         mock_clock_instance.tick.assert_called_once_with(60)
+    
+    @patch("pygame.init")
+    @patch("pygame.display.set_mode")
+    @patch("pygame.display.set_caption")
+    @patch("pygame.time.Clock")
+    @patch("core.game_manager.AudioManager")
+    def test_audio_integration(
+        self, mock_audio_manager, mock_clock, mock_caption, mock_display, mock_init
+    ):
+        """Test GameManager audio integration"""
+        # Arrange
+        mock_screen = Mock()
+        mock_display.return_value = mock_screen
+        mock_clock_instance = Mock()
+        mock_clock.return_value = mock_clock_instance
+        mock_audio_instance = Mock()
+        mock_audio_manager.return_value = mock_audio_instance
+        
+        manager = GameManager()
+        
+        # Act & Assert - Test audio methods
+        manager.load_audio("test.wav")
+        mock_audio_instance.load_music.assert_called_once_with("test.wav")
+        
+        manager.play_audio()
+        mock_audio_instance.play_music.assert_called_once()
+        
+        manager.stop_audio()
+        mock_audio_instance.stop_music.assert_called_once()
+        
+        manager.set_volume(0.5)
+        mock_audio_instance.set_volume.assert_called_once_with(0.5)
+    
+    @patch("pygame.init")
+    @patch("pygame.display.set_mode")
+    @patch("pygame.display.set_caption")
+    @patch("pygame.time.Clock")
+    @patch("core.game_manager.AudioManager")
+    def test_cleanup_with_audio(
+        self, mock_audio_manager, mock_clock, mock_caption, mock_display, mock_init
+    ):
+        """Test cleanup includes audio cleanup"""
+        # Arrange
+        mock_screen = Mock()
+        mock_display.return_value = mock_screen
+        mock_audio_instance = Mock()
+        mock_audio_manager.return_value = mock_audio_instance
+        
+        manager = GameManager()
+        
+        # Act
+        manager.cleanup()
+        
+        # Assert
+        mock_audio_instance.cleanup.assert_called_once()
